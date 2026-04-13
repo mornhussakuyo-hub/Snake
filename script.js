@@ -3,13 +3,20 @@ const ctx = canvas.getContext("2d");
 const scoreEl = document.getElementById("score");
 const bestEl = document.getElementById("best");
 const restartBtn = document.getElementById("restart");
+const difficultyButtons = document.querySelectorAll(".difficulty-button");
 const overlay = document.getElementById("overlay");
 const overlayTitle = document.getElementById("overlayTitle");
 const overlayText = document.getElementById("overlayText");
 
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
-const moveInterval = 444;
+const speeds = {
+  easy: 444,
+  normal: 260,
+  hard: 120,
+};
+let currentLevel = "normal";
+let moveSpeed = speeds[currentLevel];
 let loopId = null;
 let paused = false;
 let gameOver = true;
@@ -23,15 +30,29 @@ let bestScore = Number(localStorage.getItem("snakeBest") || 0);
 
 bestEl.textContent = bestScore;
 
-const getRandomPosition = () => {
+const getRandomPosition = (avoidEdges = true) => {
   let position;
   do {
     position = {
       x: Math.floor(Math.random() * tileCount),
       y: Math.floor(Math.random() * tileCount),
     };
-  } while (snake.some((segment) => segment.x === position.x && segment.y === position.y));
+  } while (
+    snake.some((segment) => segment.x === position.x && segment.y === position.y) ||
+    (avoidEdges && (position.x === 0 || position.x === tileCount - 1 || position.y === 0 || position.y === tileCount - 1))
+  );
   return position;
+};
+
+const setDifficulty = (level) => {
+  currentLevel = level;
+  moveSpeed = speeds[level];
+  difficultyButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.level === level);
+  });
+  if (!gameOver) {
+    updateLoop();
+  }
 };
 
 const resetGame = () => {
@@ -61,7 +82,7 @@ const updateLoop = () => {
       return;
     }
     step();
-  }, moveInterval);
+  }, moveSpeed);
 };
 
 const step = () => {
@@ -211,6 +232,12 @@ window.addEventListener("keydown", (event) => {
 
 restartBtn.addEventListener("click", () => {
   resetGame();
+});
+
+difficultyButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setDifficulty(button.dataset.level);
+  });
 });
 
 overlay.addEventListener("click", () => {
