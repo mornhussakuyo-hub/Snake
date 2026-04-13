@@ -9,7 +9,7 @@ const overlayText = document.getElementById("overlayText");
 
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
-const moveInterval = 120;
+const moveInterval = 444;
 let loopId = null;
 let paused = false;
 let gameOver = true;
